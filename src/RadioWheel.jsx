@@ -3,8 +3,8 @@ import { RadioStation } from "./RadioStation";
 import { useContext } from "react";
 import { useEffect } from "react";
 import { SongContext } from "./context/songplaying"
-import { YoutubeiFrame } from "./YoutubeiFrame";
-import stationsData from "./data/radiostations.json"
+import { RadioPlayer } from "./RadioPlayer";
+
 
 export function RadioWheel() {
     const [mouseCoord, setMouseCoord] = useState({x:null,y:null})
@@ -109,7 +109,7 @@ export function RadioWheel() {
                 })}
             </div>
 
-            <YoutubeiFrame station={stationPlaying}></YoutubeiFrame>
+           <RadioPlayer station={stationPlaying} />
 
             <div className="songmetadata">
                 <h1 className="metadatatext">{stationPlaying?.name}</h1>

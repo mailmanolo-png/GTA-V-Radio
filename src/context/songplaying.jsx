@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import { useState } from "react";
-import stationsData from "../data/radiostations.json"
+import stationsData from "../data/radiostation.json"
 import { useEffect } from "react"
 
 export const SongContext = createContext()
