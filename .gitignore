@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+public/radiostation/*.mp3
+dist/
+public/radiostation/*.mp3
+dist/
