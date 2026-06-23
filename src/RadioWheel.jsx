@@ -3,6 +3,10 @@ import { RadioStation } from "./RadioStation";
 import { SongContext } from "./context/songplaying";
 import { RadioPlayer } from "./RadioPlayer";
 
+function isTouchDevice() {
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
 export function RadioWheel() {
   const [mouseCoord, setMouseCoord] = useState({ x: null, y: null });
 
@@ -31,8 +35,35 @@ export function RadioWheel() {
     }
   });
 
+  const updateAngleFromPoint = (x, y) => {
+    const vertical = window.innerHeight - y - window.innerHeight / 2;
+    const horizontal = x - window.innerWidth / 2;
+
+    let newAngle = (180 / Math.PI) * Math.atan2(horizontal, vertical);
+
+    if (newAngle < 0) {
+      newAngle += 360;
+    }
+
+    setAngle(newAngle);
+  };
+
   const handleMouseMove = (e) => {
     setMouseCoord({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleTouchMove = (e) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    updateAngleFromPoint(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    updateAngleFromPoint(touch.clientX, touch.clientY);
   };
 
   useEffect(() => {
@@ -48,21 +79,15 @@ export function RadioWheel() {
   useEffect(() => {
     if (mouseCoord.x === null) return;
 
-    const y = window.innerHeight - mouseCoord.y - window.innerHeight / 2;
-    const x = mouseCoord.x - window.innerWidth / 2;
-
-    let newAngle = (180 / Math.PI) * Math.atan2(x, y);
-
-    if (newAngle < 0) {
-      newAngle += 360;
-    }
-
-    setAngle(newAngle);
-  }, [mouseCoord, setAngle]);
+    updateAngleFromPoint(mouseCoord.x, mouseCoord.y);
+  }, [mouseCoord]);
 
   useEffect(() => {
-    if (!qDown) return;
     if (!songs.length || !angleStep) return;
+
+    const touchDevice = isTouchDevice();
+
+    if (!qDown && !touchDevice) return;
 
     let radioNumber = 0;
 
@@ -81,10 +106,13 @@ export function RadioWheel() {
     const selectedIndex = songs.length - 1 - radioNumber;
     const selectedStation = songs[selectedIndex];
 
-    if (selectedStation) {
+    if (
+      selectedStation &&
+      selectedStation.name !== stationPlaying?.name
+    ) {
       setStationPlaying(selectedStation);
     }
-  }, [qDown, angle, songs, angleStep, setStationPlaying]);
+  }, [qDown, angle, songs, angleStep, stationPlaying?.name, setStationPlaying]);
 
   return (
     <>
@@ -94,7 +122,11 @@ export function RadioWheel() {
         <style>{`body { cursor: auto; }`}</style>
       )}
 
-      <div className="radiowheel">
+      <div
+        className="radiowheel"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+      >
         {songs.map((stationdata, i) => (
           <RadioStation
             key={stationdata.name}
