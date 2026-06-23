@@ -20,7 +20,7 @@ export function RadioPlayer({ station }) {
       return;
     }
 
-    const handleLoadedMetadata = () => {
+    const startPlayback = () => {
       const livePosition = getLivePosition(audio.duration - 5);
 
       console.log("Station:", station.name);
@@ -42,15 +42,25 @@ export function RadioPlayer({ station }) {
       });
     };
 
+    const handleLoadedMetadata = () => {
+      startPlayback();
+    };
+
+    const handleEnded = () => {
+      startPlayback();
+    };
+
     console.log("SELECTED STATION FULL OBJECT:", station);
 
     audio.src = station.link;
     audio.load();
 
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("ended", handleEnded);
 
     return () => {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("ended", handleEnded);
     };
   }, [station?.name, station?.link]);
 
