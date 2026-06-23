@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { SongContext } from "./context/songplaying";
 
 function getLivePosition(duration) {
   const seconds = Math.floor(Number(duration));
@@ -18,20 +19,70 @@ function getArtworkType(filename) {
 export function RadioPlayer({ station }) {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { songs, setStationPlaying } = useContext(SongContext);
 
-  const togglePlayback = async () => {
+  const getPlayableStations = () =>
+    songs.filter((s) => s.name !== "None" && s.link);
+
+  const playAudio = async () => {
     const audio = audioRef.current;
     if (!audio || !station || station.name === "None") return;
 
     try {
-      if (audio.paused) {
-        await audio.play();
-      } else {
-        audio.pause();
-      }
+      await audio.play();
     } catch (err) {
-      console.error("Playback toggle failed:", err);
+      console.error("Play failed:", err);
     }
+  };
+
+  const pauseAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+  };
+
+  const togglePlayback = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      await playAudio();
+    } else {
+      pauseAudio();
+    }
+  };
+
+  const skipToNextStation = () => {
+    const playableStations = getPlayableStations();
+    if (!playableStations.length || !station) return;
+
+    const currentIndex = playableStations.findIndex(
+      (s) => s.name === station.name
+    );
+
+    const nextIndex =
+      currentIndex === -1
+        ? 0
+        : (currentIndex + 1) % playableStations.length;
+
+    setStationPlaying(playableStations[nextIndex]);
+  };
+
+  const skipToPreviousStation = () => {
+    const playableStations = getPlayableStations();
+    if (!playableStations.length || !station) return;
+
+    const currentIndex = playableStations.findIndex(
+      (s) => s.name === station.name
+    );
+
+    const previousIndex =
+      currentIndex === -1
+        ? 0
+        : (currentIndex - 1 + playableStations.length) %
+          playableStations.length;
+
+    setStationPlaying(playableStations[previousIndex]);
   };
 
   useEffect(() => {
@@ -63,21 +114,27 @@ export function RadioPlayer({ station }) {
             }
           ]
         });
+
+        navigator.mediaSession.setActionHandler("play", playAudio);
+        navigator.mediaSession.setActionHandler("pause", pauseAudio);
+        navigator.mediaSession.setActionHandler("stop", pauseAudio);
+        navigator.mediaSession.setActionHandler("nexttrack", skipToNextStation);
+        navigator.mediaSession.setActionHandler(
+          "previoustrack",
+          skipToPreviousStation
+        );
       }
 
-      audio.play().catch((err) => {
-        console.error("Audio playback failed:", err);
-      });
+      playAudio();
     };
 
     const handleLoadedMetadata = () => startPlayback();
-    const handleEnded = () => {
-  audio.currentTime = 0;
 
-  audio.play().catch((err) => {
-    console.error("Audio playback failed:", err);
-  });
-};
+    const handleEnded = () => {
+      audio.currentTime = 0;
+      playAudio();
+    };
+
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
 
@@ -94,8 +151,16 @@ export function RadioPlayer({ station }) {
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
+
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.setActionHandler("play", null);
+        navigator.mediaSession.setActionHandler("pause", null);
+        navigator.mediaSession.setActionHandler("stop", null);
+        navigator.mediaSession.setActionHandler("nexttrack", null);
+        navigator.mediaSession.setActionHandler("previoustrack", null);
+      }
     };
-  }, [station?.name, station?.link, station?.filename]);
+  }, [station?.name, station?.link, station?.filename, songs]);
 
   return (
     <div className="custom-player">
@@ -103,6 +168,14 @@ export function RadioPlayer({ station }) {
 
       <button className="custom-play-button" onClick={togglePlayback}>
         {isPlaying ? "Pause" : "Play"}
+      </button>
+
+      <button className="custom-play-button" onClick={skipToPreviousStation}>
+        Prev
+      </button>
+
+      <button className="custom-play-button" onClick={skipToNextStation}>
+        Next
       </button>
 
       <div className="custom-player-info">
