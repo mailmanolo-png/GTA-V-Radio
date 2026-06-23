@@ -18,10 +18,6 @@ export function RadioWheel() {
   const angleStep = songs.length ? 360 / songs.length : 0;
   const height = 45;
 
-  const sortedStations = [...songs]
-    .filter((station) => station.name !== "None")
-    .sort((a, b) => a.name.localeCompare(b.name));
-
   let songname = null;
   let artistname = null;
 
@@ -94,23 +90,27 @@ export function RadioWheel() {
 
   return (
     <>
-      <div className="desktop-radio">
-        {qDown ? (
-          <style>{`body { cursor: none; }`}</style>
-        ) : (
-          <style>{`body { cursor: auto; }`}</style>
-        )}
+      {qDown ? (
+        <style>{`body { cursor: none; }`}</style>
+      ) : (
+        <style>{`body { cursor: auto; }`}</style>
+      )}
 
-        <div className="radiowheel">
-          {songs.map((stationdata, i) => (
-            <RadioStation
-              key={stationdata.name}
-              anglelocation={angleStep * i}
-              height={height}
-              station={stationdata}
-            />
-          ))}
-        </div>
+      <div className="radiowheel">
+        {songs.map((stationdata, i) => (
+          <RadioStation
+            key={stationdata.name}
+            anglelocation={angleStep * i}
+            height={height}
+            station={stationdata}
+          />
+        ))}
+      </div>
+
+      <div className="songmetadata">
+        <h1 className="metadatatext">{stationPlaying?.name}</h1>
+        <h2 className="metadatatext">{songname}</h2>
+        <h3 className="metadatatext">{artistname}</h3>
 
         <div className="instructions">
           <h2 className="metadatatext">Hold</h2>
@@ -121,32 +121,6 @@ export function RadioWheel() {
           )}
           <h2 className="metadatatext">to select radio</h2>
         </div>
-      </div>
-
-      <div className="mobile-radio-list">
-        {sortedStations.map((station) => (
-          <button
-            key={station.name}
-            className={
-              stationPlaying?.name === station.name
-                ? "mobile-station active"
-                : "mobile-station"
-            }
-            onClick={() => setStationPlaying(station)}
-          >
-            <img
-              src={`./radiostation/${station.filename}`}
-              alt={station.name}
-            />
-            <span>{station.name}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="songmetadata">
-        <h1 className="metadatatext">{stationPlaying?.name}</h1>
-        <h2 className="metadatatext">{songname}</h2>
-        <h3 className="metadatatext">{artistname}</h3>
       </div>
 
       <RadioPlayer station={stationPlaying} />

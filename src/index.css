@@ -74,7 +74,7 @@ iframe {
   width: 100vw;
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.01), rgba(175, 175, 175, 0.2)),
-    url('/background/gtasunset.webp');
+    url("/background/gtasunset.webp");
   display: flex;
   align-items: center;
   justify-content: center;
@@ -105,7 +105,7 @@ iframe {
 
 .metadatatext {
   -webkit-text-stroke: 1.3px black;
-  font-family: 'Oswald';
+  font-family: "Oswald", sans-serif;
 }
 
 .instructions {
@@ -116,7 +116,7 @@ iframe {
 }
 
 #qlogo {
-  margin: 3px 8px 0px;
+  margin: 3px 8px 0;
   border-radius: 4px;
   mix-blend-mode: normal;
   height: 1.4rem;
@@ -130,35 +130,6 @@ iframe {
     justify-content: center;
   }
 
-  .radiowheel {
-    height: min(72vh, 92vw);
-    top: -4rem;
-  }
-
-  .radio-station {
-    height: 4.2rem;
-    width: 4.2rem;
-  }
-
-  .songmetadata {
-    top: 46%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90vw;
-  }
-
-  h1 {
-    font-size: 2rem;
-  }
-
-  h2 {
-    font-size: 1.4rem;
-  }
-
-  h3 {
-    font-size: 1.2rem;
-  }
-  @media (max-width: 600px) {
   .instructions {
     display: none;
   }
@@ -166,6 +137,11 @@ iframe {
   .radiowheel {
     top: 2rem;
     height: min(68vh, 88vw);
+  }
+
+  .radio-station {
+    height: 4.2rem;
+    width: 4.2rem;
   }
 
   .songmetadata {
@@ -189,5 +165,4 @@ iframe {
     font-size: 1.15rem;
     margin-bottom: 0;
   }
-}
 }
