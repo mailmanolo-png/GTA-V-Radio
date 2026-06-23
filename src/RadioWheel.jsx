@@ -149,7 +149,7 @@ export function RadioWheel() {
           ) : (
             <img id="qlogo" src="./main/qlogo.png" alt="Q key" />
           )}
-          <h2 className="metadatatext">to select radio</h2>
+          <h2 className="metadatetext">to select radio</h2>
         </div>
       </div>
 
