@@ -158,4 +158,36 @@ iframe {
   h3 {
     font-size: 1.2rem;
   }
+  @media (max-width: 600px) {
+  .instructions {
+    display: none;
+  }
+
+  .radiowheel {
+    top: 2rem;
+    height: min(68vh, 88vw);
+  }
+
+  .songmetadata {
+    top: 7.5rem;
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92vw;
+    z-index: 30;
+  }
+
+  .songmetadata h1 {
+    font-size: 2.2rem;
+  }
+
+  .songmetadata h2 {
+    font-size: 1.35rem;
+  }
+
+  .songmetadata h3 {
+    font-size: 1.15rem;
+    margin-bottom: 0;
+  }
+}
 }
