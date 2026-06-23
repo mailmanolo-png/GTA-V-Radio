@@ -1,21 +1,30 @@
-:root, html, body, #root, .opacity {
+:root,
+html,
+body,
+#root,
+.opacity {
   min-height: 100vh;
-  min-width: 800px;
+  width: 100%;
   padding: 0;
   margin: 0;
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Standard */
+  overflow: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+html {
+  font-size: 14px;
 }
 
 @media (max-width: 600px) {
   html {
-    font-size: 12px;
+    font-size: 10px;
   }
-} 
+}
 
-@media (min-width: 1200px) and (max-width: 1800px){
+@media (min-width: 1200px) and (max-width: 1800px) {
   html {
     font-size: 12px;
   }
@@ -23,13 +32,13 @@
 
 @media (min-width: 1801px) and (max-width: 2400px) {
   html {
-    font-size: 18px
+    font-size: 18px;
   }
 }
 
 @media (min-width: 2401px) {
   html {
-    font-size: 23px
+    font-size: 23px;
   }
 }
 
@@ -43,7 +52,8 @@ img {
   object-fit: contain;
 }
 
-h1, h2{
+h1,
+h2 {
   margin: 0.8rem 0 1rem;
 }
 
@@ -52,31 +62,32 @@ h3 {
   margin: 0.4rem 0 2rem;
 }
 
-iframe { 
+iframe {
   position: absolute;
   visibility: hidden;
 }
 
 .app {
   background-size: cover;
-  height: 100%;
-  width: 100%;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.01),rgba(175, 175, 175, 0.2)), url('../background/gtasunset.webp');
+  background-position: center;
+  height: 100vh;
+  width: 100vw;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.01), rgba(175, 175, 175, 0.2)),
+    url('/background/gtasunset.webp');
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1;
   position: fixed;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 .radiowheel {
   position: relative;
-  top: -3rem;
-  aspect-ratio : 1 / 1;
-  height: 90vh;
+  top: -2rem;
+  aspect-ratio: 1 / 1;
+  height: min(78vh, 78vw);
 }
 
 .radio-station {
@@ -89,6 +100,7 @@ iframe {
   position: absolute;
   text-align: center;
   color: #fcfcfc;
+  max-width: 90vw;
 }
 
 .metadatatext {
@@ -103,10 +115,47 @@ iframe {
   height: 10px;
 }
 
-#qlogo { 
+#qlogo {
   margin: 3px 8px 0px;
   border-radius: 4px;
   mix-blend-mode: normal;
   height: 1.4rem;
   filter: none;
+}
+
+/* iPhone / small screens */
+@media (max-width: 600px) {
+  .app {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .radiowheel {
+    height: min(72vh, 92vw);
+    top: -4rem;
+  }
+
+  .radio-station {
+    height: 4.2rem;
+    width: 4.2rem;
+  }
+
+  .songmetadata {
+    top: 46%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+  }
 }
