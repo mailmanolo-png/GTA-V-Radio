@@ -23,10 +23,6 @@ export function RadioPlayer({ station }) {
     const startPlayback = () => {
       const livePosition = getLivePosition(audio.duration - 5);
 
-      console.log("Station:", station.name);
-      console.log("Actual audio duration:", audio.duration);
-      console.log("Live position:", livePosition);
-
       audio.currentTime = livePosition;
 
       if ("mediaSession" in navigator) {
@@ -49,8 +45,6 @@ export function RadioPlayer({ station }) {
     const handleEnded = () => {
       startPlayback();
     };
-
-    console.log("SELECTED STATION FULL OBJECT:", station);
 
     audio.src = station.link;
     audio.load();
