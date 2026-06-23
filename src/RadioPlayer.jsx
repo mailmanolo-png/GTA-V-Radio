@@ -6,6 +6,17 @@ function getLivePosition(duration) {
   return Math.floor(Date.now() / 1000) % seconds;
 }
 
+function getArtworkType(filename) {
+  if (!filename) return "image/png";
+
+  if (filename.endsWith(".png")) return "image/png";
+  if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) return "image/jpeg";
+  if (filename.endsWith(".webp")) return "image/webp";
+  if (filename.endsWith(".svg")) return "image/svg+xml";
+
+  return "image/png";
+}
+
 export function RadioPlayer({ station }) {
   const audioRef = useRef(null);
 
@@ -29,7 +40,14 @@ export function RadioPlayer({ station }) {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: station.name,
           artist: "Grand Theft Auto V",
-          album: "Radio"
+          album: "Radio",
+          artwork: [
+            {
+              src: `/radiostation/${station.filename}`,
+              sizes: "512x512",
+              type: getArtworkType(station.filename)
+            }
+          ]
         });
       }
 
@@ -56,7 +74,7 @@ export function RadioPlayer({ station }) {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [station?.name, station?.link]);
+  }, [station?.name, station?.link, station?.filename]);
 
   return (
     <div
