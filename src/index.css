@@ -270,4 +270,35 @@ iframe {
   }
 }
 
+.custom-volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: white;
+  font-family: "Oswald", sans-serif;
+  font-size: 0.9rem;
+}
+
+.custom-volume-control input[type="range"] {
+  width: 120px;
+  accent-color: rgb(167, 227, 167);
+}
+
+@media (max-width: 600px) {
+  .custom-player {
+    flex-wrap: wrap;
+  }
+
+  .custom-volume-control {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .custom-volume-control input[type="range"] {
+    flex: 1;
+    width: 100%;
+  }
+}
+
 }

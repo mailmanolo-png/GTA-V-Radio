@@ -18,6 +18,7 @@ function getArtworkType(filename) {
 export function RadioPlayer({ station }) {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(1);
 
   const togglePlayback = async () => {
     const audio = audioRef.current;
@@ -33,6 +34,23 @@ export function RadioPlayer({ station }) {
       console.error("Playback toggle failed:", err);
     }
   };
+
+  const handleVolumeChange = (event) => {
+    const newVolume = Number(event.target.value);
+    setVolume(newVolume);
+
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = newVolume;
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = volume;
+  }, [volume]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -77,6 +95,7 @@ export function RadioPlayer({ station }) {
 
     audio.src = station.link;
     audio.load();
+    audio.volume = volume;
 
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
@@ -89,7 +108,7 @@ export function RadioPlayer({ station }) {
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
     };
-  }, [station?.name, station?.link, station?.filename]);
+  }, [station?.name, station?.link, station?.filename, volume]);
 
   return (
     <div className="custom-player">
@@ -102,6 +121,19 @@ export function RadioPlayer({ station }) {
       <div className="custom-player-info">
         <strong>{station?.name || "Radio Off"}</strong>
         <span>Grand Theft Auto V Radio</span>
+      </div>
+
+      <div className="custom-volume-control">
+        <span>Vol</span>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value={volume}
+          onChange={handleVolumeChange}
+          aria-label="Volume"
+        />
       </div>
     </div>
   );
