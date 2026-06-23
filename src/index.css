@@ -165,4 +165,63 @@ iframe {
     font-size: 1.15rem;
     margin-bottom: 0;
   }
+
+  .custom-player {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 20px;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: white;
+  font-family: "Oswald", sans-serif;
+}
+
+.custom-play-button {
+  min-width: 76px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 10px;
+  background: rgba(167, 227, 167, 0.22);
+  color: white;
+  font-family: "Oswald", sans-serif;
+  font-size: 1.1rem;
+  padding: 8px 12px;
+}
+
+.custom-player-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.custom-player-info strong {
+  font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-player-info span {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+@media (max-width: 600px) {
+  .custom-player {
+    bottom: 14px;
+    padding: 9px 10px;
+  }
+
+  .custom-play-button {
+    min-width: 68px;
+    font-size: 1.2rem;
+  }
+}
 }

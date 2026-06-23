@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function getLivePosition(duration) {
   const seconds = Math.floor(Number(duration));
@@ -8,17 +8,31 @@ function getLivePosition(duration) {
 
 function getArtworkType(filename) {
   if (!filename) return "image/png";
-
   if (filename.endsWith(".png")) return "image/png";
   if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) return "image/jpeg";
   if (filename.endsWith(".webp")) return "image/webp";
   if (filename.endsWith(".svg")) return "image/svg+xml";
-
   return "image/png";
 }
 
 export function RadioPlayer({ station }) {
   const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const togglePlayback = async () => {
+    const audio = audioRef.current;
+    if (!audio || !station || station.name === "None") return;
+
+    try {
+      if (audio.paused) {
+        await audio.play();
+      } else {
+        audio.pause();
+      }
+    } catch (err) {
+      console.error("Playback toggle failed:", err);
+    }
+  };
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -28,12 +42,12 @@ export function RadioPlayer({ station }) {
       audio.pause();
       audio.removeAttribute("src");
       audio.load();
+      setIsPlaying(false);
       return;
     }
 
     const startPlayback = () => {
       const livePosition = getLivePosition(audio.duration - 5);
-
       audio.currentTime = livePosition;
 
       if ("mediaSession" in navigator) {
@@ -56,46 +70,39 @@ export function RadioPlayer({ station }) {
       });
     };
 
-    const handleLoadedMetadata = () => {
-      startPlayback();
-    };
-
-    const handleEnded = () => {
-      startPlayback();
-    };
+    const handleLoadedMetadata = () => startPlayback();
+    const handleEnded = () => startPlayback();
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
 
     audio.src = station.link;
     audio.load();
 
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
 
     return () => {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
     };
   }, [station?.name, station?.link, station?.filename]);
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        left: "12px",
-        right: "12px",
-        bottom: "20px",
-        zIndex: 999999,
-        background: "rgba(0, 0, 0, 0.75)",
-        padding: "10px",
-        borderRadius: "12px"
-      }}
-    >
-      <audio
-        ref={audioRef}
-        preload="auto"
-        controls
-        playsInline
-        style={{ width: "100%" }}
-      />
+    <div className="custom-player">
+      <audio ref={audioRef} preload="auto" playsInline />
+
+      <button className="custom-play-button" onClick={togglePlayback}>
+        {isPlaying ? "Pause" : "Play"}
+      </button>
+
+      <div className="custom-player-info">
+        <strong>{station?.name || "Radio Off"}</strong>
+        <span>Grand Theft Auto V Radio</span>
+      </div>
     </div>
   );
 }
