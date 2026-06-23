@@ -62,8 +62,9 @@ export function RadioPlayer({ station }) {
 
     const nextIndex =
       currentIndex === -1
-        ? 0
-        : (currentIndex + 1) % playableStations.length;
+       ? 0
+       : (currentIndex - 1 + playableStations.length) %
+         playableStations.length;
 
     setStationPlaying(playableStations[nextIndex]);
   };
@@ -78,9 +79,8 @@ export function RadioPlayer({ station }) {
 
     const previousIndex =
       currentIndex === -1
-        ? 0
-        : (currentIndex - 1 + playableStations.length) %
-          playableStations.length;
+      ? 0
+    : (currentIndex + 1) % playableStations.length;
 
     setStationPlaying(playableStations[previousIndex]);
   };
