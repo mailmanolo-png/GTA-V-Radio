@@ -1,131 +1,158 @@
-import { useState, useRef } from "react";
+import { useState, useContext, useEffect } from "react";
 import { RadioStation } from "./RadioStation";
-import { useContext } from "react";
-import { useEffect } from "react";
-import { SongContext } from "./context/songplaying"
+import { SongContext } from "./context/songplaying";
 import { RadioPlayer } from "./RadioPlayer";
 
-
 export function RadioWheel() {
-    const [mouseCoord, setMouseCoord] = useState({x:null,y:null})
-    const songIntervalID = useRef(null)
-    const {songs, setSongs, stationPlaying, setStationPlaying, qDown, setqDown, angle, setAngle} = useContext(SongContext)
+  const [mouseCoord, setMouseCoord] = useState({ x: null, y: null });
 
-    const radiostations = songs
-    const angleStep = 360 / songs.length
-    const height = 45
+  const {
+    songs,
+    stationPlaying,
+    setStationPlaying,
+    qDown,
+    angle,
+    setAngle
+  } = useContext(SongContext);
 
-    let songname = null
-    let artistname = null
+  const angleStep = songs.length ? 360 / songs.length : 0;
+  const height = 45;
 
-    stationPlaying?.timestamps?.forEach(timestamp => {
-        if (timestamp.start <= stationPlaying.location && stationPlaying.location <= timestamp.end ) {
-                    songname = timestamp.song
-                    artistname = timestamp.artist
-                }
-            })
+  const sortedStations = [...songs]
+    .filter((station) => station.name !== "None")
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-    const handleMouseMove = (e) => {
-        setMouseCoord({x : e.clientX, y : e.clientY})
+  let songname = null;
+  let artistname = null;
+
+  stationPlaying?.timestamps?.forEach((timestamp) => {
+    if (
+      timestamp.start <= stationPlaying.location &&
+      stationPlaying.location <= timestamp.end
+    ) {
+      songname = timestamp.song;
+      artistname = timestamp.artist;
+    }
+  });
+
+  const handleMouseMove = (e) => {
+    setMouseCoord({ x: e.clientX, y: e.clientY });
+  };
+
+  useEffect(() => {
+    if (!qDown) return;
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [qDown]);
+
+  useEffect(() => {
+    if (mouseCoord.x === null) return;
+
+    const y = window.innerHeight - mouseCoord.y - window.innerHeight / 2;
+    const x = mouseCoord.x - window.innerWidth / 2;
+
+    let newAngle = (180 / Math.PI) * Math.atan2(x, y);
+
+    if (newAngle < 0) {
+      newAngle += 360;
     }
 
-    useEffect(() => {
-        console.log(stationPlaying)
-    }, [stationPlaying])
+    setAngle(newAngle);
+  }, [mouseCoord, setAngle]);
 
-    useEffect(() => {
-        if (qDown === true) {
-            window.addEventListener("mousemove", handleMouseMove)
+  useEffect(() => {
+    if (!songs.length || !angleStep) return;
 
-            return () => {
-                window.removeEventListener("mousemove", handleMouseMove)
-            } 
-        }
-    }, [qDown])
+    let radioNumber = 0;
 
-    useEffect(() => {
-        if (mouseCoord.x === null) return;
+    for (
+      let i = -angleStep / 2;
+      i < -angleStep / 2 + 360;
+      i += angleStep
+    ) {
+      if (i <= angle && angle < i + angleStep) {
+        break;
+      }
 
-        const height = window.innerHeight - mouseCoord.y - window.innerHeight/2 
-        const width = mouseCoord.x - window.innerWidth/2
-
-        let nonStateAngle = (180 / Math.PI) * Math.atan2(width, height)
-
-        if (nonStateAngle < 0) {
-            nonStateAngle += 360;
-        }
-
-        setAngle(nonStateAngle)
-    }, [mouseCoord])
-
-    useEffect(() => {
-        let radioNumber = 0
-
-        for (let i = (-angleStep/2); i < (-angleStep/2 + 360); i += angleStep) {
-            if (i <= angle && angle < i + angleStep) {
-                break
-            }
-            else {
-                radioNumber += 1
-            }
-
-        setStationPlaying(songs[26-radioNumber]) 
-        }
-    }, [angle])
-
-    useEffect(() => {
-        if (stationPlaying && stationPlaying?.name !== "None") {
-            songIntervalID.current = setInterval(() => {
-
-                setStationPlaying(prev => ((prev?.location == prev?.seconds) ?  {...prev, location: 1} : {...prev, location: prev.location + 1}))
-            }, 1000)
-        }
-
-        return function () {
-            setSongs(prevSongs => prevSongs.map((song) => {
-                if (song.name === stationPlaying.name) {
-                    return stationPlaying
-                }
-                else {
-                    return song
-                }
-            }))
-            clearInterval(songIntervalID.current)
-        }
-    }, [stationPlaying])
-
-    return(
-        <> 
-            {qDown ? <style>{`body {cursor: none}`}</style> : <style>{`body { cursor: url('data:image/x-icon;base64,AAACAAEAICAAAAAAAACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYDuhoGA/8aBgP/GgYD/xoGA/8aBgP/GgYD/xoGA/8aBgP/GgYDugAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoGAwYaBgPe6urq/+bm5v/i4uL/39/f/9vb2//Y2Nj/1dXV/9PT0/8aBgPhAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYDYxoGA4fu7u7/6urq/+bm5v/i4uL/39/f/9vb2//Y2Nj/1dXV/xoGA94aBgMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoGAwYaBgPex8LC//Hx8f/u7u7/6urq/+bm5v/i4uL/39/f/9vb2//Y2Nj/GgYDhxoGA4cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYDYxoGA7T4+Pj/7u7u//Hx8f/u7u7/7u7u/+Li4v/i4uL/4uLi/9vb2/+wrKv/GgYD1QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoGAwYaBgPezcnI//v7+//u7u7/7u7u/+7u7v/u7u7/4uLi/+Li4v/i4uL/39/f/9vb2/8aBgPeGgYDMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYDYxoGA7T//////f39///////u7u7/7u7u/+7u7v/u7u7/4uLi/+Li4v/i4uL/39/f/xoGA4caBgOHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaBgPez8rK/v///////////////+7u7v/u7u7/7u7u/+7u7v/u7u7/4uLi/+bm5v/i4uL/tbGw/xoGA9UAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYDYxoGA7T/////z8rK/v//////////////////////////7u7u/+7u7v/u7u7/7u7u/+bm5v/i4uL/GgYD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoGAzYaBgO66Obl//////+Ge3r/////////////////////////////////7u7u/+7u7v/u7u7/6urq/+bm5v8aBgP/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYDuujm5f///////////xoGA////////////////////////f39//v7+//4+Pj/9fX1//Hx8f/u7u7/6urq/xoGA/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaBgP/6Obl/+jm5f8aBgO6GgYD/////////////////////////////f39//v7+//4+Pj/GgYD//Hx8f/u7u7/GgYD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoGA7oaBgP/GgYDuhoGAzYaBgP///////////8aBgP///////////8aBgP//f39//v7+/8aBgP/9fX1/8O/v/8aBgO6AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoGA////////////xoGA////////////xoGA////////f39/xoGA//JxcT/GgYDuhoGAxoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYD/8/Kyv//////GgYD////////////GgYD///////Pysr/GgYD/xoGA7oaBgMaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaBgM2GgYDuhoGA/8aBgP///////////8aBgP/GgYD/xoGA7oaBgM2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoGA////////////xoGA/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYD////////////GgYD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaBgP///////////8aBgP/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoGA////////////xoGA/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGgYD////////////GgYD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaBgM2GgYD/xoGA7oaBgM2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////////////////////////////////////////////gB///4Af//+AH///AA///wAP//4AD//+AAf//AAH//wAB//4AAf/8AAH//AAB//xAAf//wAP//8AH///gH///+H////h////4f///+H////h////8///8='), auto; }`}</style>}
-
-            <div className="radiowheel">
-                {radiostations.map((stationdata, i) => {
-                    if (stationPlaying == stationdata) {
-                        return <RadioStation key={stationdata.name} anglelocation={angleStep*i} height={height} station={stationdata}></RadioStation>
-                    }
-                    else {
-                        return <RadioStation key={stationdata.name} anglelocation={angleStep*i} height={height} station={stationdata}></RadioStation>
-                    }
-                })}
-            </div>
-
-           <RadioPlayer station={stationPlaying} />
-
-            <div className="songmetadata">
-                <h1 className="metadatatext">{stationPlaying?.name}</h1>
-                <h2 className="metadatatext">{songname}</h2>
-                <h3 className="metadatatext">{artistname}</h3>
-                <div className="instructions">
-                    <h2 className="metadatatext">Hold</h2>
-                    {qDown ? <img id='qlogo' src="./main/qlogooppositecolor.png"></img> : <img id='qlogo' src="./main/qlogo.png"></img>}
-                    <h2 className="metadatatext">to select radio</h2>
-                </div>
-
-            </div>
-        </>
-
-        )
+      radioNumber += 1;
     }
+
+    const selectedIndex = songs.length - 1 - radioNumber;
+    const selectedStation = songs[selectedIndex];
+
+    if (
+      selectedStation &&
+      selectedStation.name !== stationPlaying?.name
+    ) {
+      setStationPlaying(selectedStation);
+    }
+  }, [angle, songs, angleStep, stationPlaying?.name, setStationPlaying]);
+
+  return (
+    <>
+      <div className="desktop-radio">
+        {qDown ? (
+          <style>{`body { cursor: none; }`}</style>
+        ) : (
+          <style>{`body { cursor: auto; }`}</style>
+        )}
+
+        <div className="radiowheel">
+          {songs.map((stationdata, i) => (
+            <RadioStation
+              key={stationdata.name}
+              anglelocation={angleStep * i}
+              height={height}
+              station={stationdata}
+            />
+          ))}
+        </div>
+
+        <div className="instructions">
+          <h2 className="metadatatext">Hold</h2>
+          {qDown ? (
+            <img id="qlogo" src="./main/qlogooppositecolor.png" alt="Q key" />
+          ) : (
+            <img id="qlogo" src="./main/qlogo.png" alt="Q key" />
+          )}
+          <h2 className="metadatatext">to select radio</h2>
+        </div>
+      </div>
+
+      <div className="mobile-radio-list">
+        {sortedStations.map((station) => (
+          <button
+            key={station.name}
+            className={
+              stationPlaying?.name === station.name
+                ? "mobile-station active"
+                : "mobile-station"
+            }
+            onClick={() => setStationPlaying(station)}
+          >
+            <img
+              src={`./radiostation/${station.filename}`}
+              alt={station.name}
+            />
+            <span>{station.name}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="songmetadata">
+        <h1 className="metadatatext">{stationPlaying?.name}</h1>
+        <h2 className="metadatatext">{songname}</h2>
+        <h3 className="metadatatext">{artistname}</h3>
+      </div>
+
+      <RadioPlayer station={stationPlaying} />
+    </>
+  );
+}
 
     /* stationPlaying = {name: null, song:null, artist: null} 
     songs = [
