@@ -71,7 +71,13 @@ export function RadioPlayer({ station }) {
     };
 
     const handleLoadedMetadata = () => startPlayback();
-    const handleEnded = () => startPlayback();
+    const handleEnded = () => {
+  audio.currentTime = 0;
+
+  audio.play().catch((err) => {
+    console.error("Audio playback failed:", err);
+  });
+};
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
 
