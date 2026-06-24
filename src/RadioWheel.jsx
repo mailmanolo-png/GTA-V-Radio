@@ -18,10 +18,10 @@ export function RadioWheel() {
   const angleStep = songs.length ? 360 / songs.length : 0;
   const height = 45;
 
-  let songname = null;
-  let artistname = null;
-
-  
+  // Song metadata is hidden because the timestamp data does not match
+  // the current MP3 files accurately.
+  const songname = null;
+  const artistname = null;
 
   const handleMouseMove = (e) => {
     setMouseCoord({ x: e.clientX, y: e.clientY });
