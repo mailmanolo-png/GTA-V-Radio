@@ -19,11 +19,16 @@ function getArtworkType(filename) {
 export function RadioPlayer({ station }) {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
   const { songs, setStationPlaying } = useContext(SongContext);
 
   const getPlayableStations = () =>
     songs.filter((s) => s.name !== "None" && s.link);
+
+  const setMediaPlaybackState = (state) => {
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.playbackState = state;
+    }
+  };
 
   const playAudio = async () => {
     const audio = audioRef.current;
@@ -31,6 +36,7 @@ export function RadioPlayer({ station }) {
 
     try {
       await audio.play();
+      setMediaPlaybackState("playing");
     } catch (err) {
       console.error("Play failed:", err);
     }
@@ -39,7 +45,9 @@ export function RadioPlayer({ station }) {
   const pauseAudio = () => {
     const audio = audioRef.current;
     if (!audio) return;
+
     audio.pause();
+    setMediaPlaybackState("paused");
   };
 
   const togglePlayback = async () => {
@@ -95,43 +103,13 @@ export function RadioPlayer({ station }) {
       audio.removeAttribute("src");
       audio.load();
       setIsPlaying(false);
+      setMediaPlaybackState("none");
       return;
     }
 
-    const updateStationLocation = () => {
-      const currentLocation = Math.floor(audio.currentTime);
-
-      setStationPlaying((prev) => {
-        if (!prev || prev.name !== station.name) {
-          return prev;
-        }
-
-        if (prev.location === currentLocation) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          location: currentLocation
-        };
-      });
-    };
-
     const startPlayback = () => {
       const livePosition = getLivePosition(audio.duration - 5);
-
       audio.currentTime = livePosition;
-
-      setStationPlaying((prev) => {
-        if (!prev || prev.name !== station.name) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          location: Math.floor(livePosition)
-        };
-      });
 
       if ("mediaSession" in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
@@ -166,41 +144,30 @@ export function RadioPlayer({ station }) {
 
     const handleEnded = () => {
       audio.currentTime = 0;
-
-      setStationPlaying((prev) => {
-        if (!prev || prev.name !== station.name) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          location: 0
-        };
-      });
-
       playAudio();
     };
 
-    const handleTimeUpdate = () => {
-      updateStationLocation();
+    const handlePlay = () => {
+      setIsPlaying(true);
+      setMediaPlaybackState("playing");
     };
 
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePause = () => {
+      setIsPlaying(false);
+      setMediaPlaybackState("paused");
+    };
 
     audio.src = station.link;
     audio.load();
 
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
-    audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
 
     return () => {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
 
