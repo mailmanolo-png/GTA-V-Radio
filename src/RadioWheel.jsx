@@ -21,15 +21,7 @@ export function RadioWheel() {
   let songname = null;
   let artistname = null;
 
-  stationPlaying?.timestamps?.forEach((timestamp) => {
-    if (
-      timestamp.start <= stationPlaying.location &&
-      stationPlaying.location <= timestamp.end
-    ) {
-      songname = timestamp.song;
-      artistname = timestamp.artist;
-    }
-  });
+  
 
   const handleMouseMove = (e) => {
     setMouseCoord({ x: e.clientX, y: e.clientY });
